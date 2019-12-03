@@ -12,6 +12,6 @@ been slightly modified for use with the assembler.
 
 [source,asm]
 ------
-include::examples/sum.s[]
+[[include:examples/sum.s]]
 ------
 
