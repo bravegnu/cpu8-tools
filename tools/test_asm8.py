@@ -25,6 +25,8 @@ test_valid_insts = [
     ("LWI R1, 0x01",         b"\xC4\x01"),     # Immediate second operand
     ("LWI R1, 10",           b"\xC4\x0A"),     # Immediate in decimal format
     ("LWI R1, 0b01010101",   b"\xC4\x55"),     # Immediate in binary format
+    (".byte 0x00",           b"\x00"),         # Pseudo instruction
+    (".byte 0xAA",           b"\xAA"),         # Non-zero value
 ]
 
 

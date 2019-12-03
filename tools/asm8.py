@@ -9,17 +9,18 @@ import re
 import sys
 
 MNEMONIC_LIST = ("AND OR ADD SUB LW SW MOV NOP "
-                 "JEQ JNE JGT JLT LWI SWI LI JMP").split()
+                 "JEQ JNE JGT JLT LWI SWI LI JMP "
+                 "BYTE").split()
 
 REG_LIST = "R0 R1 R2 R3".split()
 
 SYNTAX = re.compile(r"^((?P<label>\w+):)?"
-                    r"(\s*(?P<mnemonic>\w+)"
+                    r"(\s*(?P<mnemonic>.?\w+)"
                     r"(\s+(?P<operand1>\w+)\s*"
                     r"(,\s*\(?(?P<operand2>\w+)\)?)?)?)?"
                     r"\s*([;#].*)?$")
 
-Mnemonics = IntEnum("Mnemonics", zip(MNEMONIC_LIST, range(16)))
+Mnemonics = IntEnum("Mnemonics", zip(MNEMONIC_LIST, range(17)))
 
 
 def error(msg):
@@ -45,6 +46,9 @@ def parse_mnemonic(mnemonic, line):
 
     Exits with an error message if the mnemonic is invalid.
     """
+    if mnemonic.startswith("."):
+        mnemonic = mnemonic[1:]
+
     try:
         mnemonic = mnemonic.upper()
         return Mnemonics[mnemonic]
@@ -58,13 +62,17 @@ def has_imm(opcode):
     return bool(opcode & 0b1000)
 
 
-def mk_inst(opcode, rd, rs, imm):
+def mk_inst(opcode, dreg, sreg, imm):
     """Returns the bytes corresponding to the parsed instruction."""
 
     inst = []
-    inst.append(opcode << 4 | rd << 2 | rs)
-    if has_imm(opcode):
+    if opcode == Mnemonics.BYTE:
         inst.append(imm)
+    else:
+        inst.append(opcode << 4 | dreg << 2 | sreg)
+        if has_imm(opcode):
+            inst.append(imm)
+
     return bytes(inst)
 
 
@@ -135,7 +143,7 @@ def pass_two(prog, symtab):
         opcode = parse_mnemonic(mnemonic, i)
 
         if operand1 is not None:
-            if opcode == Mnemonics.JMP:
+            if opcode == Mnemonics.JMP or opcode == Mnemonics.BYTE:
                 imm = parse_imm(operand1, symtab, i)
             else:
                 operand1 = operand1.upper()
@@ -173,4 +181,8 @@ def main(prog_filename, bin_filename):
         error("error opening file: {}".format(exc))
 
 if __name__ == "__main__":
+    if len(sys.argv) != 3:
+        print("Usage: asm8 <asm-file> <bin-file>")
+        exit(1)
+
     main(sys.argv[1], sys.argv[2])
