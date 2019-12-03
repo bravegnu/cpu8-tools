@@ -1,6 +1,17 @@
-# CPU8 Tools
+= CPU8 Tools
 
 Tools for the hardwired CPU at
 https://minnie.tuhs.org/CompArch/Tutes/week03.html
 
 Currently implements an assembler in Python.
+
+== Assembler
+
+The following is an example again from the above website, that has
+been slightly modified for use with the assembler.
+
+[source,asm]
+------
+include::examples/sum.s[]
+------
+
