@@ -7,6 +7,7 @@ from enum import IntEnum
 
 import re
 import sys
+import os.path
 
 MNEMONIC_LIST = ("AND OR ADD SUB LW SW MOV NOP "
                  "JEQ JNE JGT JLT LWI SWI LI JMP "
@@ -168,21 +169,32 @@ def assemble(lines):
     return pass_two(lines, symtab)
 
 
-def main(prog_filename, bin_filename):
+def main(prog_filename):
     """Main application entry point."""
 
+    filename, ext = os.path.splitext(prog_filename)
+    bin_filename = filename + ".bin"
+    img_filename = filename + ".img"
+
     try:
+        with open(prog_filename, "r") as prog_file:
+            lines = prog_file.readlines()
+            binary = assemble(lines)
+
         with open(bin_filename, "wb") as bin_file:
-            with open(prog_filename, "r") as prog_file:
-                lines = prog_file.readlines()
-                binary = assemble(lines)
-                bin_file.write(binary)
+            bin_file.write(binary)
+
+        with open(img_filename, "w") as img_file:
+            img_file.write("v2.0 raw\n")
+            for b in binary:
+                img_file.write("{:02x}\n".format(b))
+
     except OSError as exc:
         error("error opening file: {}".format(exc))
 
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        print("Usage: asm8 <asm-file> <bin-file>")
+    if len(sys.argv) != 2:
+        print("Usage: asm8 <asm-file>")
         exit(1)
 
-    main(sys.argv[1], sys.argv[2])
+    main(sys.argv[1])

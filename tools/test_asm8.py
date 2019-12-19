@@ -67,13 +67,14 @@ def bin_file(monkeypatch):
 
     bin_file = XBytesIO()
     asm_file = StringIO("nop")
-    mock_open = Mock(side_effect=[bin_file, asm_file])
+    img_file = StringIO()
+    mock_open = Mock(side_effect=[asm_file, bin_file, img_file])
     monkeypatch.setattr(builtins, "open", mock_open)
 
     return bin_file
 
 
 def test_main(bin_file):
-    asm8_main("hello.s", "hello.bin")
+    asm8_main("hello.s")
 
     assert bin_file.value_at_close == b"\x70"
